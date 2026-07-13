@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prospr — Il copilota AI del networker</title>
+<style>
+:root{
+  --bg:#0b0f1a; --bg2:#121829; --card:#161d31; --card2:#1c2540;
+  --line:#26304d; --txt:#e8ecf6; --mut:#93a0c0; --brand:#6d5efc; --brand2:#22d3ee;
+  --good:#34d399; --warn:#fbbf24; --bad:#fb7185; --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:
+  radial-gradient(1200px 700px at 80% -10%,#1b2547 0,transparent 60%),
+  radial-gradient(1000px 600px at -10% 20%,#132132 0,transparent 55%),var(--bg);
+  color:var(--txt);min-height:100vh;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding:20px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 20px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:-.5px}
+.logo .dot{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand2));
+  display:grid;place-items:center;font-size:16px;box-shadow:0 6px 20px rgba(109,94,252,.5)}
+.tag{color:var(--mut);font-size:13px;font-weight:500}
+.top-actions{display:flex;gap:8px;align-items:center}
+.lang{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.lang button{background:none;border:none;color:var(--mut);padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px}
+.lang button.on{background:var(--brand);color:#fff}
+nav{display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:6px;margin-bottom:20px}
+nav button{flex:1;min-width:120px;background:none;border:none;color:var(--mut);padding:11px 10px;border-radius:10px;
+  cursor:pointer;font-weight:700;font-size:14px;transition:.15s;display:flex;gap:7px;align-items:center;justify-content:center}
+nav button:hover{color:var(--txt);background:var(--card2)}
+nav button.on{background:linear-gradient(135deg,var(--brand),#5847e0);color:#fff;box-shadow:0 4px 14px rgba(109,94,252,.4)}
+.view{display:none;animation:fade .3s}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card h2{font-size:17px;margin-bottom:4px}
+.card .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}}
+label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin:0 0 6px;text-transform:uppercase;letter-spacing:.4px}
+select,input,textarea{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);
+  padding:11px 12px;border-radius:10px;font-size:14px;font-family:inherit}
+textarea{resize:vertical;min-height:80px}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--brand)}
+.btn{background:linear-gradient(135deg,var(--brand),#5847e0);color:#fff;border:none;padding:12px 18px;border-radius:11px;
+  font-weight:800;font-size:14px;cursor:pointer;transition:.15s;box-shadow:0 5px 16px rgba(109,94,252,.4)}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:var(--card2);box-shadow:none;color:var(--txt);border:1px solid var(--line)}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:9px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.out{background:linear-gradient(180deg,var(--card2),#151c33);border:1px solid var(--line);border-radius:12px;
+  padding:16px;white-space:pre-wrap;font-size:14.5px;line-height:1.65;margin-top:14px;min-height:60px}
+.pill{display:inline-block;background:var(--card2);border:1px solid var(--line);color:var(--mut);
+  padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;margin:2px 4px 2px 0}
+.stat{background:linear-gradient(180deg,var(--card2),#151c33);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.stat .n{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--brand2),var(--brand));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .l{font-size:11.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.check{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.check:hover{border-color:var(--brand)}
+.check.done{opacity:.5}
+.check.done .ctext{text-decoration:line-through}
+.box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:13px}
+.check.done .box{background:var(--good);border-color:var(--good);color:#062}
+.ctext{font-size:14px;font-weight:600}
+.cmeta{font-size:11.5px;color:var(--mut)}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;overflow-x:auto}
+@media(max-width:760px){.board{grid-template-columns:1fr}}
+.col{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:120px}
+.col h3{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--mut);margin-bottom:10px;display:flex;justify-content:space-between}
+.col h3 .cnt{background:var(--card2);border-radius:20px;padding:1px 8px;font-size:11px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:8px;cursor:grab;font-size:13px}
+.pcard:active{cursor:grabbing}
+.pcard .pn{font-weight:700}
+.pcard .px{color:var(--mut);font-size:11px;margin-top:2px}
+.pcard .pmove{display:flex;gap:4px;margin-top:8px}
+.pcard .pmove button{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--mut);border-radius:6px;font-size:14px;cursor:pointer;padding:2px}
+.pcard .pmove button:hover{color:var(--txt);border-color:var(--brand)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+@media(max-width:760px){.cal{grid-template-columns:repeat(2,1fr)}}
+.day{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:9px;min-height:78px;font-size:12px}
+.day .dn{font-weight:800;color:var(--brand2);font-size:11px}
+.day .dt{font-weight:700;margin-top:3px}
+.day .dd{color:var(--mut);font-size:11px;margin-top:2px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--good);color:#043;
+  padding:12px 22px;border-radius:30px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:.3s;z-index:50;font-size:14px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.foot{text-align:center;color:var(--mut);font-size:12px;padding:24px 0}
+.badge{font-size:10px;background:var(--brand);color:#fff;padding:2px 7px;border-radius:20px;font-weight:800;vertical-align:middle}
+.hint{font-size:12px;color:var(--mut);margin-top:6px}
+a{color:var(--brand2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="dot">⚡</span><div>Prospr <div class="tag" data-t="tagline">Il copilota AI del networker sui social</div></div></div>
+    <div class="top-actions">
+      <div class="lang">
+        <button id="it" class="on" onclick="setLang('it')">IT</button>
+        <button id="en" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="on" onclick="go('dash',this)">📊 <span data-t="nav_dash">Oggi</span></button>
+    <button onclick="go('content',this)">✍️ <span data-t="nav_content">Contenuti</span></button>
+    <button onclick="go('dm',this)">💬 <span data-t="nav_dm">Chiudi in DM</span></button>
+    <button onclick="go('pipe',this)">🎯 <span data-t="nav_pipe">Prospect</span></button>
+    <button onclick="go('cal',this)">📅 <span data-t="nav_cal">Piano 30 giorni</span></button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section id="dash" class="view on">
+    <div class="grid g4">
+      <div class="stat"><div class="n" id="s_streak">0</div><div class="l" data-t="st_streak">Giorni di fila</div></div>
+      <div class="stat"><div class="n" id="s_prosp">0</div><div class="l" data-t="st_prosp">Prospect attivi</div></div>
+      <div class="stat"><div class="n" id="s_done">0/5</div><div class="l" data-t="st_done">Azioni oggi</div></div>
+      <div class="stat"><div class="n" id="s_gen">0</div><div class="l" data-t="st_gen">Contenuti creati</div></div>
+    </div>
+    <div class="card">
+      <h2 data-t="dash_h">🔥 Le tue 5 azioni che generano reddito (IPA)</h2>
+      <div class="sub" data-t="dash_s">Falle ogni giorno. Il networking è un gioco di ripetizione: chi le fa 90 giorni di fila vince.</div>
+      <div id="ipa"></div>
+      <div class="hint" data-t="dash_reset">Le azioni si azzerano ogni giorno. La tua serie cresce solo se le completi tutte.</div>
+    </div>
+  </section>
+
+  <!-- CONTENT STUDIO -->
+  <section id="content" class="view">
+    <div class="card">
+      <h2 data-t="c_h">✍️ Content Studio</h2>
+      <div class="sub" data-t="c_s">Smetti di chiederti "cosa posto oggi?". Scegli, genera, copia, pubblica.</div>
+      <div class="grid g3">
+        <div><label data-t="c_niche">Il tuo settore</label>
+          <select id="c_niche">
+            <option value="benessere" data-t="c_n1">Benessere / Integratori</option>
+            <option value="beauty" data-t="c_n2">Beauty / Skincare</option>
+            <option value="fitness" data-t="c_n3">Fitness / Dimagrimento</option>
+            <option value="finanza" data-t="c_n4">Finanza / Risparmio</option>
+            <option value="viaggi" data-t="c_n5">Viaggi / Lifestyle</option>
+            <option value="generico" data-t="c_n6">Opportunità di business</option>
+          </select></div>
+        <div><label data-t="c_goal">Obiettivo del post</label>
+          <select id="c_goal">
+            <option value="attract" data-t="c_g1">Attrarre (valore/educare)</option>
+            <option value="story" data-t="c_g2">Storytelling personale</option>
+            <option value="social" data-t="c_g3">Riprova sociale / risultati</option>
+            <option value="cta" data-t="c_g4">Invito soft (chiamata all'azione)</option>
+            <option value="recruit" data-t="c_g5">Attrarre collaboratori</option>
+          </select></div>
+        <div><label data-t="c_format">Formato</label>
+          <select id="c_format">
+            <option value="caption" data-t="c_f1">Caption Instagram/Facebook</option>
+            <option value="reel" data-t="c_f2">Script Reel/TikTok</option>
+            <option value="story" data-t="c_f3">Sequenza Storie</option>
+          </select></div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" onclick="genContent()" data-t="c_btn">✨ Genera contenuto</button>
+        <button class="btn ghost sm" onclick="genContent()" data-t="c_again">🔄 Rigenera</button>
+        <button class="btn ghost sm" onclick="copyOut('c_out')" data-t="copy">📋 Copia</button>
+      </div>
+      <div class="out" id="c_out" data-t="c_placeholder">Il tuo contenuto apparirà qui…</div>
+    </div>
+  </section>
+
+  <!-- DM CLOSER -->
+  <section id="dm" class="view">
+    <div class="card">
+      <h2 data-t="d_h">💬 DM Closer — script che chiudono</h2>
+      <div class="sub" data-t="d_s">La vendita avviene in chat. Scegli la situazione: ti do lo script parola per parola, senza sembrare spam.</div>
+      <div class="grid g2">
+        <div><label data-t="d_scen">Situazione</label>
+          <select id="d_scen">
+            <option value="open" data-t="d_o1">Rompere il ghiaccio (nuovo contatto)</option>
+            <option value="engaged" data-t="d_o2">Ha messo like / commentato</option>
+            <option value="reconnect" data-t="d_o3">Riattivare un vecchio contatto</option>
+            <option value="present" data-t="d_o4">Passare alla presentazione</option>
+            <option value="followup" data-t="d_o5">Follow-up (non ha risposto)</option>
+            <option value="obj_money" data-t="d_o6">Obiezione: "non ho soldi"</option>
+            <option value="obj_time" data-t="d_o7">Obiezione: "non ho tempo"</option>
+            <option value="obj_pyramid" data-t="d_o8">Obiezione: "è una piramide?"</option>
+            <option value="obj_think" data-t="d_o9">Obiezione: "ci devo pensare"</option>
+            <option value="close" data-t="d_o10">Chiusura / chiedere l'ordine</option>
+          </select></div>
+        <div><label data-t="d_name">Nome del prospect (opzionale)</label>
+          <input id="d_name" placeholder="Es. Giulia"></div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" onclick="genDM()" data-t="d_btn">💬 Genera script</button>
+        <button class="btn ghost sm" onclick="genDM()" data-t="c_again">🔄 Rigenera</button>
+        <button class="btn ghost sm" onclick="copyOut('d_out')" data-t="copy">📋 Copia</button>
+      </div>
+      <div class="out" id="d_out" data-t="d_placeholder">Il tuo script apparirà qui…</div>
+      <div class="hint" data-t="d_rule">⚠️ Regola d'oro: prima la relazione, poi il business. Fai domande, ascolta, e invita — non spammare mai il link al primo messaggio.</div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section id="pipe" class="view">
+    <div class="card">
+      <h2 data-t="p_h">🎯 Pipeline prospect</h2>
+      <div class="sub" data-t="p_s">Il fatturato si perde nel follow-up. Tieni ogni contatto sotto controllo dalla prima chat alla chiusura.</div>
+      <div class="row">
+        <input id="p_name" placeholder="Nome" style="flex:2;min-width:140px">
+        <input id="p_note" placeholder="Nota (dove l'hai conosciuto, interesse…)" style="flex:3;min-width:180px">
+        <button class="btn" onclick="addProspect()" data-t="p_add">+ Aggiungi</button>
+      </div>
+      <div class="board" id="board" style="margin-top:16px"></div>
+    </div>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="cal" class="view">
+    <div class="card">
+      <h2 data-t="cal_h">📅 Piano contenuti 30 giorni</h2>
+      <div class="sub" data-t="cal_s">Un mese di post già pianificati con il metodo che alterna valore, storia e inviti. Zero blocco creativo.</div>
+      <div class="row">
+        <button class="btn" onclick="genCal()" data-t="cal_btn">📅 Genera il mio piano</button>
+      </div>
+      <div class="cal" id="calgrid" style="margin-top:16px"></div>
+    </div>
+  </section>
+
+  <div class="foot">Prospr — © 2026 · <span data-t="foot">Costruito per i networker che vogliono chiudere ogni giorno.</span></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- STATE ---------- */
+var LANG='it', genCount=0;
+function load(k,d){try{return JSON.parse(localStorage.getItem('prospr_'+k))??d}catch(e){return d}}
+function save(k,v){localStorage.setItem('prospr_'+k,JSON.stringify(v))}
+var today=new Date().toISOString().slice(0,10);
+var state=load('state',{date:today,ipa:[false,false,false,false,false],streak:0,gen:0});
+if(state.date!==today){ // new day
+  if(state.ipa && state.ipa.every(x=>x)) state.streak=(state.streak||0); else state.streak=state.ipa&&state.ipa.every(x=>x)?state.streak:0;
+  state.date=today; state.ipa=[false,false,false,false,false];
+}
+var prospects=load('prospects',[]);
+
+/* ---------- I18N ---------- */
+var T={
+ tagline:{it:"Il copilota AI del networker sui social",en:"The AI wingman for social sellers"},
+ nav_dash:{it:"Oggi",en:"Today"},nav_content:{it:"Contenuti",en:"Content"},nav_dm:{it:"Chiudi in DM",en:"Close in DM"},nav_pipe:{it:"Prospect",en:"Prospects"},nav_cal:{it:"Piano 30 giorni",en:"30-Day Plan"},
+ st_streak:{it:"Giorni di fila",en:"Day streak"},st_prosp:{it:"Prospect attivi",en:"Active prospects"},st_done:{it:"Azioni oggi",en:"Actions today"},st_gen:{it:"Contenuti creati",en:"Content created"},
+ dash_h:{it:"🔥 Le tue 5 azioni che generano reddito (IPA)",en:"🔥 Your 5 income-producing activities (IPA)"},
+ dash_s:{it:"Falle ogni giorno. Il networking è un gioco di ripetizione: chi le fa 90 giorni di fila vince.",en:"Do them daily. Network marketing is a game of repetition — whoever does them 90 days straight wins."},
+ dash_reset:{it:"Le azioni si azzerano ogni giorno. La tua serie cresce solo se le completi tutte.",en:"Actions reset each day. Your streak grows only if you complete them all."},
+ c_h:{it:"✍️ Content Studio",en:"✍️ Content Studio"},
+ c_s:{it:'Smetti di chiederti "cosa posto oggi?". Scegli, genera, copia, pubblica.',en:'Stop asking "what do I post today?". Pick, generate, copy, publish.'},
+ c_niche:{it:"Il tuo settore",en:"Your niche"},c_goal:{it:"Obiettivo del post",en:"Post goal"},c_format:{it:"Formato",en:"Format"},
+ c_n1:{it:"Benessere / Integratori",en:"Wellness / Supplements"},c_n2:{it:"Beauty / Skincare",en:"Beauty / Skincare"},c_n3:{it:"Fitness / Dimagrimento",en:"Fitness / Weight loss"},c_n4:{it:"Finanza / Risparmio",en:"Finance / Savings"},c_n5:{it:"Viaggi / Lifestyle",en:"Travel / Lifestyle"},c_n6:{it:"Opportunità di business",en:"Business opportunity"},
+ c_g1:{it:"Attrarre (valore/educare)",en:"Attract (value/educate)"},c_g2:{it:"Storytelling personale",en:"Personal storytelling"},c_g3:{it:"Riprova sociale / risultati",en:"Social proof / results"},c_g4:{it:"Invito soft (chiamata all'azione)",en:"Soft invite (call to action)"},c_g5:{it:"Attrarre collaboratori",en:"Attract teammates"},
+ c_f1:{it:"Caption Instagram/Facebook",en:"Instagram/Facebook caption"},c_f2:{it:"Script Reel/TikTok",en:"Reel/TikTok script"},c_f3:{it:"Sequenza Storie",en:"Story sequence"},
+ c_btn:{it:"✨ Genera contenuto",en:"✨ Generate content"},c_again:{it:"🔄 Rigenera",en:"🔄 Regenerate"},copy:{it:"📋 Copia",en:"📋 Copy"},
+ c_placeholder:{it:"Il tuo contenuto apparirà qui…",en:"Your content will appear here…"},
+ d_h:{it:"💬 DM Closer — script che chiudono",en:"💬 DM Closer — scripts that close"},
+ d_s:{it:"La vendita avviene in chat. Scegli la situazione: ti do lo script parola per parola, senza sembrare spam.",en:"Sales happen in the chat. Pick the situation — I give you the word-for-word script, without sounding spammy."},
+ d_scen:{it:"Situazione",en:"Situation"},d_name:{it:"Nome del prospect (opzionale)",en:"Prospect name (optional)"},
+ d_o1:{it:"Rompere il ghiaccio (nuovo contatto)",en:"Break the ice (new contact)"},d_o2:{it:"Ha messo like / commentato",en:"Liked / commented"},d_o3:{it:"Riattivare un vecchio contatto",en:"Reactivate an old contact"},d_o4:{it:"Passare alla presentazione",en:"Move to the presentation"},d_o5:{it:"Follow-up (non ha risposto)",en:"Follow-up (no reply)"},d_o6:{it:'Obiezione: "non ho soldi"',en:'Objection: "no money"'},d_o7:{it:'Obiezione: "non ho tempo"',en:'Objection: "no time"'},d_o8:{it:'Obiezione: "è una piramide?"',en:'Objection: "is it a pyramid?"'},d_o9:{it:'Obiezione: "ci devo pensare"',en:'Objection: "I need to think"'},d_o10:{it:"Chiusura / chiedere l'ordine",en:"Close / ask for the order"},
+ d_btn:{it:"💬 Genera script",en:"💬 Generate script"},d_placeholder:{it:"Il tuo script apparirà qui…",en:"Your script will appear here…"},
+ d_rule:{it:"⚠️ Regola d'oro: prima la relazione, poi il business. Fai domande, ascolta, e invita — non spammare mai il link al primo messaggio.",en:"⚠️ Golden rule: relationship first, business second. Ask questions, listen, invite — never spam a link in the first message."},
+ p_h:{it:"🎯 Pipeline prospect",en:"🎯 Prospect pipeline"},
+ p_s:{it:"Il fatturato si perde nel follow-up. Tieni ogni contatto sotto controllo dalla prima chat alla chiusura.",en:"Revenue is lost in the follow-up. Track every contact from first chat to close."},
+ p_add:{it:"+ Aggiungi",en:"+ Add"},
+ cal_h:{it:"📅 Piano contenuti 30 giorni",en:"📅 30-Day content plan"},
+ cal_s:{it:"Un mese di post già pianificati con il metodo che alterna valore, storia e inviti. Zero blocco creativo.",en:"A month of posts planned with a method that alternates value, story and invites. Zero creative block."},
+ cal_btn:{it:"📅 Genera il mio piano",en:"📅 Generate my plan"},
+ foot:{it:"Costruito per i networker che vogliono chiudere ogni giorno.",en:"Built for networkers who want to close every day."}
+};
+var STAGES={it:["Nuovo","In chat","Presentato","Follow-up","Chiuso ✅"],en:["New","Chatting","Presented","Follow-up","Closed ✅"]};
+
+function setLang(l){LANG=l;save('lang',l);document.getElementById('it').classList.toggle('on',l=='it');document.getElementById('en').classList.toggle('on',l=='en');
+  document.documentElement.lang=l;
+  document.querySelectorAll('[data-t]').forEach(function(e){var k=e.getAttribute('data-t');if(T[k])e.textContent=T[k][l]});
+  renderIPA();renderStats();renderBoard();}
+LANG=load('lang','it');
+
+/* ---------- NAV ---------- */
+function go(id,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+
+/* ---------- DASHBOARD ---------- */
+var IPA={it:["Aggiungi 5 nuovi contatti mirati","Interagisci con 10 profili (like + commento vero)","Manda 5 messaggi di apertura genuini","Fai follow-up con 3 prospect esistenti","Pubblica 1 contenuto di valore"],
+ en:["Add 5 new targeted contacts","Engage 10 profiles (like + real comment)","Send 5 genuine opening messages","Follow up with 3 existing prospects","Publish 1 piece of value content"]};
+function renderIPA(){var c=document.getElementById('ipa');c.innerHTML='';
+  IPA[LANG].forEach(function(t,i){var d=document.createElement('div');d.className='check'+(state.ipa[i]?' done':'');
+    d.innerHTML='<div class="box">'+(state.ipa[i]?'✓':'')+'</div><div><div class="ctext">'+t+'</div></div>';
+    d.onclick=function(){state.ipa[i]=!state.ipa[i];if(state.ipa.every(x=>x)){state.streak=(state.streak||0)+1;toast(LANG=='it'?'🔥 Giornata completata! Serie: '+state.streak:'🔥 Day complete! Streak: '+state.streak);}
+      save('state',state);renderIPA();renderStats();};c.appendChild(d);});}
+function renderStats(){document.getElementById('s_streak').textContent=state.streak||0;
+  document.getElementById('s_prosp').textContent=prospects.filter(p=>p.stage<4).length;
+  document.getElementById('s_done').textContent=state.ipa.filter(x=>x).length+'/5';
+  document.getElementById('s_gen').textContent=state.gen||0;}
+
+/* ---------- CONTENT ENGINE ---------- */
+var HOOKS={it:["Nessuno te lo dice, ma","La verità che ho capito troppo tardi:","Smettila di fare questo se vuoi","3 cose che avrei voluto sapere prima di","Ti sei mai chiesto perché","Se ci sei passato anche tu, questo è per te.","Ho smesso di crederci finché non è successo a me.","Piccolo promemoria per chi oggi ci sta pensando:"],
+ en:["Nobody tells you this, but","The truth I learned too late:","Stop doing this if you want","3 things I wish I knew before","Have you ever wondered why","If you've been there too, this is for you.","I didn't believe it until it happened to me.","Small reminder for anyone thinking about it today:"]};
+var NICHE={
+ benessere:{it:{topic:"la tua energia e il tuo benessere",pain:"ti svegli già stanco e tiri avanti a caffè",dream:"avere energia costante tutto il giorno"},en:{topic:"your energy and wellbeing",pain:"you wake up already tired and run on coffee",dream:"steady energy all day long"}},
+ beauty:{it:{topic:"la tua pelle",pain:"provi mille prodotti e nessuno mantiene le promesse",dream:"una pelle luminosa senza filtri"},en:{topic:"your skin",pain:"you try a thousand products and none deliver",dream:"glowing skin with no filter"}},
+ fitness:{it:{topic:"la tua forma fisica",pain:"inizi mille diete e molli dopo due settimane",dream:"sentirti bene nei tuoi vestiti senza ossessioni"},en:{topic:"your fitness",pain:"you start a thousand diets and quit after two weeks",dream:"feeling good in your clothes without obsession"}},
+ finanza:{it:{topic:"le tue finanze",pain:"a fine mese non resta mai niente",dream:"una seconda entrata che ti dia respiro"},en:{topic:"your finances",pain:"nothing's ever left at the end of the month",dream:"a second income that gives you breathing room"}},
+ viaggi:{it:{topic:"la libertà di viaggiare",pain:"aspetti 11 mesi per 1 settimana di ferie",dream:"lavorare da dove vuoi"},en:{topic:"the freedom to travel",pain:"you wait 11 months for 1 week off",dream:"working from anywhere you want"}},
+ generico:{it:{topic:"la tua libertà",pain:"scambi tempo per soldi e il tempo non basta mai",dream:"decidere tu come vivere le tue giornate"},en:{topic:"your freedom",pain:"you trade time for money and time never adds up",dream:"deciding for yourself how you live your days"}}
+};
+var HASH={benessere:"#benessere #energia #salute #wellness",beauty:"#skincare #beauty #pelle #selfcare",fitness:"#fitness #dimagrire #benessere #motivazione",finanza:"#risparmio #secondaentrata #libertàfinanziaria",viaggi:"#viaggi #lifestyle #libertà #digitalnomad",generico:"#opportunità #mindset #crescita #libertà"};
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function genContent(){
+  var n=val('c_niche'),g=val('c_goal'),f=val('c_format'),L=LANG;
+  var nd=NICHE[n][L], hook=pick(HOOKS[L]), out='';
+  var A=L=='it';
+  if(f=='reel'){
+    out=(A?"🎬 SCRIPT REEL/TIKTOK\n\n":"🎬 REEL/TIKTOK SCRIPT\n\n")
+      +(A?"[0-3s HOOK — guarda in camera] ":"[0-3s HOOK — look at camera] ")+hook+" "+nd.topic+".\n\n"
+      +(A?"[3-15s PROBLEMA] Lo so perché ci sono passato: "+nd.pain+".\n\n":"[3-15s PROBLEM] I know because I've been there: "+nd.pain+".\n\n")
+      +(A?"[15-30s SVOLTA] Poi ho cambiato una cosa. Non magia — un metodo semplice che porta a "+nd.dream+".\n\n":"[15-30s TURN] Then I changed one thing. Not magic — a simple method toward "+nd.dream+".\n\n")
+      +(A?"[CTA] Se vuoi sapere come, scrivi \"INFO\" nei commenti 👇":"[CTA] Want to know how? Comment \"INFO\" 👇")
+      +"\n\n"+HASH[n];
+  } else if(f=='story'){
+    out=(A?"📲 SEQUENZA STORIE (4 slide)\n\n":"📲 STORY SEQUENCE (4 slides)\n\n")
+      +(A?"Slide 1 (testo su sfondo): "+hook+" "+nd.topic+"…\n\n":"Slide 1 (text on background): "+hook+" "+nd.topic+"…\n\n")
+      +(A?"Slide 2 (tu che parli): Ti racconto: "+nd.pain+". Era la mia vita.\n\n":"Slide 2 (you talking): Real talk: "+nd.pain+". That was my life.\n\n")
+      +(A?"Slide 3: Oggi lavoro per "+nd.dream+". È possibile, davvero.\n\n":"Slide 3: Today I work toward "+nd.dream+". It's truly possible.\n\n")
+      +(A?"Slide 4 (sticker sondaggio/domanda): \"Vuoi sapere come ho iniziato?\" → Sì / Raccontami":"Slide 4 (poll/question sticker): \"Want to know how I started?\" → Yes / Tell me");
+  } else {
+    var body={
+      attract:{it:hook+" quando si parla di "+nd.topic+".\n\nMolti pensano che serva forza di volontà. In realtà serve un sistema. Ecco 3 cose che ho imparato:\n\n1️⃣ Le piccole abitudini battono i grandi sforzi.\n2️⃣ L'ambiente conta più della motivazione.\n3️⃣ Non devi farlo da solo.\n\nSalva questo post se ti serve oggi. 💾",en:hook+" when it comes to "+nd.topic+".\n\nMost think it takes willpower. It actually takes a system. Here are 3 things I learned:\n\n1️⃣ Small habits beat big efforts.\n2️⃣ Environment matters more than motivation.\n3️⃣ You don't have to do it alone.\n\nSave this post if you need it today. 💾"},
+      story:{it:"Un anno fa "+nd.pain+".\n\nMi ero quasi arreso. Poi ho detto sì a qualcosa che mi spaventava.\n\nOggi lavoro per "+nd.dream+" — e la parte più bella è aver capito che non ero \"sbagliato\", mi mancava solo la strada giusta.\n\nSe ti rivedi in questo, il primo passo è più vicino di quanto pensi. ❤️",en:"A year ago "+nd.pain+".\n\nI'd almost given up. Then I said yes to something that scared me.\n\nToday I work toward "+nd.dream+" — and the best part was realizing I wasn't \"broken\", I just needed the right path.\n\nIf you see yourself in this, the first step is closer than you think. ❤️"},
+      social:{it:"3 mesi fa questa persona era scettica come forse lo sei tu adesso.\n\nOggi mi ha scritto: \"Non ci credo di aver aspettato tanto.\" 🥹\n\nNon vendo prodotti. Aiuto persone a ottenere "+nd.dream+".\n\nI risultati non sono garantiti e dipendono dall'impegno — ma le persone giuste, con il metodo giusto, si muovono. Vuoi essere la prossima storia? Scrivimi. ✨",en:"3 months ago this person was as skeptical as maybe you are now.\n\nToday they texted me: \"I can't believe I waited this long.\" 🥹\n\nI don't sell products. I help people reach "+nd.dream+".\n\nResults aren't guaranteed and depend on the effort — but the right people, with the right method, move. Want to be the next story? DM me. ✨"},
+      cta:{it:hook+" "+nd.topic+".\n\nSto aprendo qualche posto per aiutare 3 persone a lavorare su "+nd.dream+" nei prossimi 30 giorni.\n\nNiente pressioni, nessun impegno: solo una chiacchierata per capire se fa per te.\n\nCommenta \"IO\" o scrivimi in DM e ti mando le info. 👇",en:hook+" "+nd.topic+".\n\nI'm opening a few spots to help 3 people work toward "+nd.dream+" over the next 30 days.\n\nNo pressure, no commitment — just a chat to see if it's a fit.\n\nComment \"ME\" or DM me and I'll send the info. 👇"},
+      recruit:{it:"Non cerco clienti oggi. Cerco 2 persone.\n\nPersone stanche di "+nd.pain+", pronte a imparare un'attività che si costruisce dal telefono.\n\nNon serve esperienza. Serve voglia di imparare e costanza. Al resto ti formo io, passo passo.\n\nSe una piccola parte di te ha detto \"e se fossi io?\", scrivimi. Parliamone. 🚀",en:"I'm not looking for customers today. I'm looking for 2 people.\n\nPeople tired of "+nd.pain+", ready to learn a business you build from your phone.\n\nNo experience needed. Just willingness to learn and consistency. I'll train you step by step.\n\nIf a small part of you just said \"what if it's me?\", DM me. Let's talk. 🚀"}
+    };
+    out=body[g][L]+"\n\n"+HASH[n];
+  }
+  document.getElementById('c_out').textContent=out;
+  state.gen=(state.gen||0)+1;save('state',state);renderStats();
+}
+
+/* ---------- DM ENGINE ---------- */
+function genDM(){
+  var s=val('d_scen'),nm=document.getElementById('d_name').value.trim(),L=LANG,A=L=='it';
+  var hi=nm?(A?"Ciao "+nm+"! ":"Hi "+nm+"! "):(A?"Ciao! ":"Hey! ");
+  var M={
+   open:{it:hi+"Ho visto il tuo profilo e mi ha colpito [nota qualcosa di specifico: la tua bio / una foto / il tuo lavoro]. Volevo salutarti e basta 🙂 Da dove segui?",en:hi+"I came across your profile and [note something specific: your bio / a photo / your work] caught my eye. Just wanted to say hi 🙂 Where are you based?"},
+   engaged:{it:hi+"Grazie per il like/commento, mi ha fatto piacere! 🙌 Immagino allora che [argomento] ti interessi… posso chiederti cosa ti ha colpito?",en:hi+"Thanks for the like/comment, made my day! 🙌 So I guess [topic] interests you… can I ask what caught your attention?"},
+   reconnect:{it:hi+"È passato un po'! Mi sei venuto/a in mente e volevo sapere come stai davvero — come va la vita ultimamente?",en:hi+"It's been a while! You came to mind and I wanted to know how you're really doing — how's life lately?"},
+   present:{it:(nm?nm+", ":"")+"da come mi parli credo che una cosa a cui sto lavorando possa esserti utile. Non è per tutti, quindi preferisco mostrartela invece di scriverti un papiro 😅 Ti mando un video di 4 minuti o preferisci 10 min in call questa settimana?",en:(nm?nm+", ":"")+"from what you're telling me, something I'm working on might actually help you. It's not for everyone, so I'd rather show you than write an essay 😅 Should I send a 4-min video, or prefer a 10-min call this week?"},
+   followup:{it:(nm?nm+"! ":"Ciao! ")+"So che la vita corre 🙂 Ti riscrivo solo per non lasciarti nel vuoto: ti va di dare un'occhiata a quella cosa, o preferisci che ci sentiamo più avanti? Va bene qualsiasi risposta, davvero.",en:(nm?nm+"! ":"Hey! ")+"I know life gets busy 🙂 Just circling back so I don't leave you hanging: want to take a look at that thing, or should we reconnect later? Any answer is totally fine, honestly."},
+   obj_money:{it:"Ti capisco benissimo, e apprezzo che tu sia sincero/a 🙏 Proprio perché i soldi contano ho iniziato: volevo cambiare quella situazione. Posso farti una domanda? Se ti mostrassi come rientrare della cifra nelle prime settimane, saresti aperto/a a valutarlo o è proprio il momento sbagliato?",en:"I totally get it, and I appreciate your honesty 🙏 Money is exactly why I started — I wanted to change that situation. Can I ask you something? If I showed you how to earn the amount back in the first weeks, would you be open to looking, or is it just the wrong time?"},
+   obj_time:{it:"Ti capisco, il tempo è la cosa più preziosa 🙌 Curiosità: ho iniziato proprio perché NON avevo tempo e volevo comprarmene di più. Bastano 30-45 min al giorno dal telefono. Se ti mostrassi come incastrarli senza stravolgere le giornate, daresti un'occhiata?",en:"I hear you — time is the most precious thing 🙌 Funny thing: I started precisely because I had NO time and wanted to buy more of it. It takes 30-45 min a day from your phone. If I showed you how to fit it in without upending your day, would you take a look?"},
+   obj_pyramid:{it:"Domanda giustissima, e sono contento/a che me lo chiedi 🙂 No: nelle piramidi non c'è prodotto e guadagna solo chi entra prima. Qui c'è un prodotto reale che le persone comprano e ognuno viene pagato per i risultati che produce, non per la posizione. Ti mostro esattamente come funziona così ti fai un'idea tua?",en:"Fair question, and I'm glad you asked 🙂 No: pyramids have no product and only early joiners profit. Here there's a real product people buy, and everyone is paid for the results they produce, not their position. Want me to show you exactly how it works so you can judge for yourself?"},
+   obj_think:{it:"Ci sta pensarci 🙂 Di solito \"ci penso\" nasconde una domanda a cui non ho ancora risposto bene. Posso chiederti: cos'è la cosa che ti fa esitare di più — il tempo, i soldi o il dubbio che funzioni per te?",en:"Totally fair to think it over 🙂 Usually \"let me think\" hides a question I haven't answered well yet. Can I ask: what makes you hesitate most — the time, the money, or the doubt it'll work for you?"},
+   close:{it:(nm?nm+", ":"")+"da quello che mi dici ci sono tutti i presupposti giusti ✨ Io farei così: partiamo con [pacchetto/passo], ti seguo personalmente nei primi 30 giorni e ci mettiamo un obiettivo insieme. Se te la senti, ti mando il link e partiamo oggi — preferisci iniziare ora o domani?",en:(nm?nm+", ":"")+"from what you're telling me, the pieces are all there ✨ Here's what I'd do: we start with [package/step], I coach you personally for the first 30 days, and we set a goal together. If you're up for it, I'll send the link and we start today — do you prefer to begin now or tomorrow?"}
+  };
+  document.getElementById('d_out').textContent=M[s][L];
+}
+
+/* ---------- PIPELINE ---------- */
+function addProspect(){var n=document.getElementById('p_name').value.trim();if(!n)return;
+  prospects.push({id:Date.now(),name:n,note:document.getElementById('p_note').value.trim(),stage:0});
+  save('prospects',prospects);document.getElementById('p_name').value='';document.getElementById('p_note').value='';
+  renderBoard();renderStats();toast(LANG=='it'?'Prospect aggiunto ✅':'Prospect added ✅');}
+function moveP(id,dir){var p=prospects.find(x=>x.id==id);if(!p)return;p.stage=Math.max(0,Math.min(4,p.stage+dir));
+  save('prospects',prospects);renderBoard();renderStats();}
+function delP(id){prospects=prospects.filter(x=>x.id!=id);save('prospects',prospects);renderBoard();renderStats();}
+function renderBoard(){var b=document.getElementById('board');b.innerHTML='';
+  STAGES[LANG].forEach(function(st,si){var col=document.createElement('div');col.className='col';
+    var items=prospects.filter(p=>p.stage==si);
+    col.innerHTML='<h3>'+st+'<span class="cnt">'+items.length+'</span></h3>';
+    items.forEach(function(p){var d=document.createElement('div');d.className='pcard';
+      d.innerHTML='<div class="pn">'+esc(p.name)+'</div>'+(p.note?'<div class="px">'+esc(p.note)+'</div>':'')
+        +'<div class="pmove"><button title="←" onclick="moveP('+p.id+',-1)">←</button><button title="→" onclick="moveP('+p.id+',1)">→</button><button title="x" onclick="delP('+p.id+')">🗑</button></div>';
+      col.appendChild(d);});
+    b.appendChild(col);});}
+
+/* ---------- CALENDAR ---------- */
+function genCal(){var g=document.getElementById('calgrid');g.innerHTML='';var A=LANG=='it';
+  var plan=A?["Valore","Storia","Riprova sociale","Dietro le quinte","Invito soft","Educativo","Riposo/engagement"]:["Value","Story","Social proof","Behind the scenes","Soft invite","Educational","Rest/engagement"];
+  var desc=A?["Insegna 1 cosa utile","Racconta un tuo pezzo di percorso","Mostra un risultato (tuo o di un cliente)","Fai vedere la tua giornata reale","Apri a chi vuole saperne di più","Sfata un mito del settore","Sondaggio/domanda per far parlare i follower"]:["Teach 1 useful thing","Share a piece of your journey","Show a result (yours or a client's)","Show your real day","Open up to those curious","Bust an industry myth","Poll/question to get followers talking"];
+  for(var i=0;i<30;i++){var d=document.createElement('div');d.className='day';var t=i%7;
+    d.innerHTML='<div class="dn">'+(A?'Giorno ':'Day ')+(i+1)+'</div><div class="dt">'+plan[t]+'</div><div class="dd">'+desc[t]+'</div>';
+    g.appendChild(d);}
+  toast(A?'Piano generato 📅':'Plan generated 📅');}
+
+/* ---------- UTILS ---------- */
+function val(id){return document.getElementById(id).value}
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function copyOut(id){var t=document.getElementById(id).textContent;navigator.clipboard.writeText(t).then(function(){toast(LANG=='it'?'Copiato! 📋':'Copied! 📋')});}
+var tt;function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),2200);}
+
+/* ---------- INIT ---------- */
+setLang(LANG);renderIPA();renderStats();renderBoard();genCal();
+document.getElementById('c_out').textContent=T.c_placeholder[LANG];
+document.getElementById('d_out').textContent=T.d_placeholder[LANG];
+</script>
+</body>
+</html>

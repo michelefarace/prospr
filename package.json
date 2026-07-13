@@ -1,0 +1,11 @@
+{
+  "name": "prospr",
+  "version": "1.0.0",
+  "description": "Prospr — il copilota AI del networker sui social",
+  "scripts": {
+    "start": "serve -s . -l $PORT"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
+  }
+}
